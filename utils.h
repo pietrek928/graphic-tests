@@ -18,7 +18,7 @@
 // TODO: something with pure
 #ifdef __clang__
 
-#define INLINE_WRAPPER inline __attribute__((optimize("-Os"), always_inline, artificial))
+#define INLINE_WRAPPER inline __attribute__((always_inline, artificial))
 #define RARE_FUNC __attribute__((minsize, cold))
 #define FREQUENT_FUNC __attribute__((hot))
 

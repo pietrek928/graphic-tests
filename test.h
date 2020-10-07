@@ -70,10 +70,23 @@ class TestRunnerClass {
             S[i] = t.sys_time;
         }
 
-        DBG(test) << name << "(" << N << "x):: "
+        INFO(test) << name << "(" << N << "x):: "
             << "real: " << average_time(R) / ticks_count << "s; "
             << "user: " << average_time(U) / ticks_count << "s; "
             << "sys: " << average_time(S) / ticks_count << "s" << LOG_ENDL;
+
+        return *this;
+    }
+
+    auto &run(Targs... args) {
+        auto ticks_count = sysconf(_SC_CLK_TCK);
+
+        auto t = run_timing(args...);
+
+        INFO(test) << name << "OK:: "
+            << "real: " << t.real_time / ticks_count << "s; "
+            << "user: " << t.user_time /ticks_count << "s; "
+            << "sys: " << t.sys_time / ticks_count << "s" << LOG_ENDL;
 
         return *this;
     }

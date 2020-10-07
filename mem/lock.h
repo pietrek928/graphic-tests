@@ -31,7 +31,7 @@ class ScopeLockArg { // TODO: move only object
 
         INLINE_WRAPPER
         ScopeLockArg(Tm &_m, Targ arg)
-            : m(_m), arg(arg) {
+            : m(&_m), arg(arg) {
             m->lock_c(arg);
         }
 
