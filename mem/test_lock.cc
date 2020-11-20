@@ -2,6 +2,7 @@
 #include "lock_set.h"
 #include "lock_pool.h"
 #include "test.h"
+#include "a b.h"
 
 #include <iostream>
 #include <vector>

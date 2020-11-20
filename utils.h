@@ -43,8 +43,11 @@ typedef uint8_t byte;
 /**********  LOGGING  ************/
 #include <ctime>
 #include <sys/time.h>
+#include <errno.h>
 #include <iomanip>
 #include <iostream>
+#include <typeinfo>
+#include <type_traits>
 
 enum class LogLevel {
     NOTSET = 0,
@@ -145,6 +148,22 @@ const char __space_sep__[] = " ";
     auto args_str = __dbg_args_to_string__<__space_sep__>(__VA_ARGS__); \
     throw std::runtime_error(__dbg_args_to_string__<__space_sep__>(loc_str, "Assert", "`" #cond "`", "failed:", args_str)); \
 }}
+#define ASSERT_SYS(cond, ...) { \
+    bool err_cond; \
+    if constexpr(std::is_same<decltype(cond), int>::value) { \
+        err_cond = ((cond) != -1); \
+    } else { \
+        err_cond = (cond); \
+    } \
+    if (unlikely(!(err_cond))) { \
+        auto line_num = __LINE__; \
+        auto loc_str = __dbg_args_to_string__<__colon_sep__>(__FILE__, __FUNCTION__, line_num); \
+        auto args_str = __dbg_args_to_string__<__space_sep__>(__VA_ARGS__); \
+        std::string errno_str = strerror(errno); \
+        throw std::runtime_error(__dbg_args_to_string__<__space_sep__>(loc_str, "Assert", "`" #cond "`", \
+                    "failed(", errno_str, "):", args_str)); \
+}}
+
 #ifdef DEBUG
 #define ASSERT_DBG(...) ASSERT(__VA_ARGS__)
 #else /* DEBUG */
@@ -155,17 +174,28 @@ const char __space_sep__[] = " ";
 /********** TUPLE FOREACH LOOP  ***********/
 #include <tuple>
 
-template<int N, typename Tp, class... Targs>
-inline void for_each(Tp &p, std::tuple<Targs...> &t) {
+template<int N, typename Tlambda, class... Targs>
+inline void for_each(Tlambda &&p, std::tuple<Targs...> &t) {
     if constexpr(N < sizeof...(Targs)) {
-        p.process(std::get<N>(t));
+        p(std::get<N>(t));
         for_each<(int)(N+1)>(p, t);
     }
 }
 
-template<typename Tp, class... Targs>
-void for_each(Tp &p, std::tuple<Targs...> t) {
+template<typename Tlambda, class... Targs>
+void for_each(Tlambda &&p, std::tuple<Targs...> &t) {
     for_each<0>(p, t);
+}
+
+template<typename Tlambda, class... Targs>
+void for_one(Tlambda &&p, std::tuple<Targs...> t, int n) {
+    int i = 0;
+    ASSERT_DBG(0 <= n && n < sizeof...(Targs), "Value position in `for_one` is out of range", n, sizeof...(Targs));
+    for_each([&](auto &v) {
+        if (i++ == n) {
+            p(v);
+        }
+    }, t);
 }
 
 
