@@ -122,6 +122,7 @@ auto &start_log_line_stream(LogLevel level, const char *channel_name) {
 
 /**********  ASSERT  ***********/
 #include <string>
+#include <string.h>
 
 namespace std {
     string to_string(const char *s) {
