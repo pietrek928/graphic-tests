@@ -13,9 +13,10 @@ constexpr auto CHANNEL_LOG_LEVEL_files = LogLevel::DEBUG;
 
 class CompileDependencyTracker : LockObject {
     std::unordered_map<int, std::vector<int>> reverse_dependency_graph;
+    std::unordered_set<int> generated_obj;
+
     std::unordered_map<int, int> dep_cnt;
     std::unordered_set<int> to_compile;
-    std::unordered_set<int> generated_obj;
     std::unordered_set<int> failed_obj;
 
     void add_to_compile(int v) {
@@ -114,6 +115,14 @@ class CompileDependencyTracker : LockObject {
 
         failed_obj.erase(v);
         dec_dep<true>(v);
+    }
+
+    void clear_state() {
+        auto l = lock();
+
+        dep_cnt.clear();
+        to_compile.clear();
+        failed_obj.clear();
     }
 
     void update_deps(int v, std::vector<int> old_deps, std::vector<int> new_deps) {

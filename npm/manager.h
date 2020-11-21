@@ -22,7 +22,7 @@ class TargetManager : LockObject {
     }
 
     public:
-    TargetManager(Ttargets_tuple tgs)
+    TargetManager(Ttargets_tuple tgs, bool compile_start = true)
         : tgs(tgs) {
         std::unordered_map<int, std::vector<int>> deps;
         int i = 0;
@@ -37,6 +37,10 @@ class TargetManager : LockObject {
             deps[obj_n] = translate(str_deps);
             dependency_tracker.update_deps(obj_n, {}, deps[obj_n]);
         }, tgs);
+
+        if (!compile_start) {
+            dependency_tracker.clear_state();
+        }
     }
 
     void run_compiler() {
@@ -71,12 +75,12 @@ class TargetManager : LockObject {
 
 template<class Ttargets_tuple>
 auto init_targets(Ttargets_tuple tgs) {
-    return TargetManager<Ttargets_tuple>(tgs);
+    return TargetManager<Ttargets_tuple>(tgs, false);
 }
 
 void restart(char **argv) {
     INFO(compile) << "Restarting program..." << DBG_ENDL;
-    //ASSERT_SYS(execv(argv[0], argv), "Restarting failed.");
+    ASSERT_SYS(execv(argv[0], argv), "Restarting failed.");
 }
 
 #endif /* __MANAGER_H_ */
