@@ -84,9 +84,6 @@ class CompileDependencyTracker : LockObject {
         } else {
             // TODO: do sth ? recompile ???
         }
-        for (auto const &it : dep_cnt) {
-            DBG(files) << it.first << " " << it.second << DBG_ENDL;
-        }
     }
 
     int compile_pop() {

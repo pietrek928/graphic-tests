@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
     std::vector<std::string> compile_opts = {"-std=c++17", "-O2", "-s"};
     std::vector<std::string> common_include_dirs = {".", "..", "../mem"};
     auto mgr = init_targets(std::make_tuple(
-        FromSourceTarget("npm.e", "npm.cc", compile_opts, common_include_dirs, {"pthread"}),
-        ActionTarget("npm.e", "!compiler", [&](){
+        FromSourceTarget("run.e", "run_config.cc", compile_opts, common_include_dirs, {"pthread"}),
+        ActionTarget("run.e", "!compiler", [&](){
             restart(argv);
         })
     ));
