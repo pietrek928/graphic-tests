@@ -83,7 +83,7 @@ class TestRunnerClass {
 
         auto t = run_timing(args...);
 
-        INFO(test) << name << "OK:: "
+        INFO(test) << name << " OK:: "
             << "real: " << t.real_time / ticks_count << "s; "
             << "user: " << t.user_time /ticks_count << "s; "
             << "sys: " << t.sys_time / ticks_count << "s" << LOG_ENDL;

@@ -3,17 +3,18 @@
 
 #include <utils.h>
 
+#include <exception>
 #include <sys/mman.h>
-#include <vector>
+
 
 class SimpleAllocator {
-    constexpr int PAGESIZE = 4096;
+    constexpr static int PAGE_SIZE = 4096;
 
     void *ptr = MAP_FAILED;
     size_t size;
 
     static auto align_size(size_t size) {
-        return (max_size + PAGE_SIZE - 1) & ((size_t)~(PAGE_SIZE - 1));
+        return (size + PAGE_SIZE - 1) & ((size_t)~(PAGE_SIZE - 1));
     }
 
     public:
@@ -22,25 +23,44 @@ class SimpleAllocator {
         : size(align_size(size)) {
         ptr = mmap(
             NULL, size, PROT_READ | PROT_WRITE,
-            MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1
+            MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0
         );
-        ASSERT(
-            new_ptr != MAP_FAILED,
-            "mmap of", size, "bytes failed"
+        ASSERT_EXC_VOID(ptr != MAP_FAILED, std::bad_alloc
+            //"mmap of", size, "bytes failed"
         );
     }
 
+    SimpleAllocator(SimpleAllocator &&a) {
+        ptr = a.ptr;
+        a.ptr = MAP_FAILED;
+
+        size = a.size;
+    }
+
+    SimpleAllocator &operator=(SimpleAllocator &&a) {
+        clear();
+        ptr = a.ptr;
+        a.ptr = MAP_FAILED;
+
+        size = a.size;
+
+        return *this;
+    }
+
+    auto get_data() {
+        return ptr;
+    }
+
+    template<bool can_move = false>
     void resize(size_t new_size) {
         new_size = align_size(new_size);
         if (likely(size != new_size)) {
             auto new_ptr = mremap(
-                ptr, size, new_size, 0
+                ptr, size, new_size, can_move ? MREMAP_MAYMOVE : 0
             );
 
-            // TODO: allow move ?
-            ASSERT(
-                new_ptr != MAP_FAILED,
-                "mremap of", size, "to", new_size,  "failed"
+            ASSERT_EXC_VOID(new_ptr != MAP_FAILED, std::bad_alloc
+                //"mremap of", size, "to", new_size, "failed"
             );
 
             ptr = new_ptr;
@@ -48,10 +68,15 @@ class SimpleAllocator {
         }
     }
 
-    ~SimpleAllocator() {
-        if (ptr != MAP_FAILED) {
+    void clear() {
+        if (likely(ptr != MAP_FAILED)) {
             munmap(ptr, size);
+            ptr = MAP_FAILED;
         }
+    }
+
+    ~SimpleAllocator() {
+        clear();
     }
 };
 

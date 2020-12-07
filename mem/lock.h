@@ -167,6 +167,7 @@ class LockObject {
     }
 
     public:
+    using lock_holder_t = ScopeLock<LockObject>;
 
     // MUST be used inside synchronized block
     void wait() {

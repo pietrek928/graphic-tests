@@ -2,7 +2,6 @@
 #include "lock_set.h"
 #include "lock_pool.h"
 #include "test.h"
-#include "a b.h"
 
 #include <iostream>
 #include <vector>
@@ -21,7 +20,7 @@ class SyncIntSet : public SetLock<int> {
     volatile int v = 0;
 };
 
-class SyncIntPool : public PoolLock<16> {
+class SyncIntPool : public PoolLock<int, 16> {
     public:
     volatile int v = 0;
 };

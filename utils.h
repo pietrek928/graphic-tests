@@ -164,6 +164,12 @@ const char __space_sep__[] = " ";
         throw std::runtime_error(__dbg_args_to_string__<__space_sep__>(loc_str, "Assert", "`" #cond "`", \
                     "failed(", errno_str, "):", args_str)); \
 }}
+#define ASSERT_EXC(cond, exc, ...) {if (unlikely(!(cond))) { \
+    throw exc(__dbg_args_to_string__<__space_sep__>(__VA_ARGS__)); \
+}}
+#define ASSERT_EXC_VOID(cond, exc) {if (unlikely(!(cond))) { \
+    throw exc(); \
+}}
 
 #ifdef DEBUG
 #define ASSERT_DBG(...) ASSERT(__VA_ARGS__)
